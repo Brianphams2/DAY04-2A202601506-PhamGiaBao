@@ -64,9 +64,8 @@ doanh nghiệp, ngân hàng trung ương, lãi suất, tiền tệ, hàng hóa v
 
 ### B1. Version evidence
 
-Các run v0–v4 dưới đây là evidence thật trong `runs/`. v5 là bản hoàn thiện
-flow confirmation, UI trace và UTF-8 CLI; v5 chưa chạy lại fixed eval nên không
-được dùng để khai báo metric tự động mới.
+Các run v0–v5 dưới đây là evidence thật trong `runs/`. v5 là bản hoàn thiện
+flow confirmation, UI trace và UTF-8 CLI, đồng thời đã chạy lại fixed eval.
 
 | Version | Thay đổi chính | Case accuracy | Routing | Args | Multiturn | Evidence |
 |---|---|---:|---:|---:|---:|---|
@@ -76,10 +75,12 @@ flow confirmation, UI trace và UTF-8 CLI; v5 chưa chạy lại fixed eval nên
 | v3 | Bổ sung finance routing và safety rules | 0.70 | 0.90 | 0.70 | 0.6667 | `runs/v3_B_base_vilao_20260729T154942264733.json` |
 | v4 | Đăng ký finance/publishing tools và team eval | 0.75 | 0.95 | 0.75 | 0.6667 | `runs/v4_B_base_vilao_20260729T162646537145.json` |
 | v4 group | 10 team-authored cases | 0.60 (6/10) | 0.90 | 0.60 | 0.60 | `runs/v4_B_group_vilao_20260729T163250139791.json` |
-| v5 final | Finance-only scope, pending action, UI trace, UTF-8 CLI | chưa đo lại | — | — | — | `artifacts/version_log.csv` |
+| v5 final | Finance-only scope, pending action, UI trace, UTF-8 CLI | 0.70 | 0.90 | 0.70 | 0.6667 | `runs/v5_B_base_vilao_20260729T184436149522.json` |
+| v5 group | 10 team-authored cases on final artifacts | 0.60 (6/10) | 0.90 | 0.60 | 0.80 | `runs/v5_B_group_vilao_20260729T184551818384.json` |
 
-Tất cả các run VILAO v0–v4 có `provider_error_cases=0` và đủ measured cases.
-Run OpenRouter đầu tiên bị lỗi quota 402 nên không dùng làm metric chính.
+Các run được chọn làm metric chính đều có `provider_error_cases=0` và đủ measured cases.
+Hai run thử lỗi provider được giữ lại để minh bạch nhưng không dùng làm metric chính:
+run OpenRouter đầu tiên bị lỗi quota 402 và run VILAO v1 đầu tiên bị lỗi kết nối.
 
 ### B2. Failure analysis
 
