@@ -62,6 +62,10 @@ def main() -> int:
         f"credentials_ready={preview.get('credentials_ready')}",
     )
     check("dry run leaks no secret", not secrets_leaked(dry))
+    check(
+        "dry run sets awaiting_user so the agent loop pauses for the user",
+        dry.get("awaiting_user") is True and bool(dry.get("question")),
+    )
 
     check(
         "permalink is built from the composite post id",

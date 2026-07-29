@@ -5,7 +5,7 @@ kind: action
 provider: Telegram Bot API
 requires_env: [TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_TEST_CHAT_ID]
 inputs: [text, confirmed, parse_mode, destination, disable_preview]
-outputs: [status, preview, destination, chars, messages_sent, message_ids, parse_mode, fallback_to_plain]
+outputs: [status, awaiting_user, question, preview, destination, chars, messages_sent, message_ids, parse_mode, fallback_to_plain]
 side_effect: true
 requires_confirmation: true
 ---
@@ -51,6 +51,8 @@ Two-step flow. With `confirmed=false` the tool sends nothing and returns:
 {
   "tool": "send_telegram",
   "status": "needs_confirmation",
+  "awaiting_user": true,
+  "question": "Gửi tin này lên Telegram (default, 812 ký tự, 1 message)? ...",
   "preview": {
     "destination": "default", "chars": 812, "messages": 1,
     "parse_mode": "markdown", "credentials_ready": true,
@@ -58,6 +60,14 @@ Two-step flow. With `confirmed=false` the tool sends nothing and returns:
   }
 }
 ```
+
+`awaiting_user: true` is what makes the gate real. `run_model_tool_loop` in
+`chat.py` stops the round as soon as a tool result carries that flag and returns
+`status: "waiting_for_user"` with `question` as the assistant text. Without it
+the loop would feed this preview straight back to the model, which could answer
+its own confirmation prompt and call again with `confirmed=true` in the same
+turn — the user would never see it. The gate is enforced by the harness, not by
+the model's cooperation.
 
 `preview` is what the UI shows in the confirmation modal. `credentials_ready`
 warns that the send would fail on missing env vars before the user commits.

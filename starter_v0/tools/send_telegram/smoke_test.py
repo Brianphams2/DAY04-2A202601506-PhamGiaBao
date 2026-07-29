@@ -65,6 +65,10 @@ def main() -> int:
         f"credentials_ready={preview.get('credentials_ready')}",
     )
     check("dry run leaks no secret", not secrets_leaked(dry))
+    check(
+        "dry run sets awaiting_user so the agent loop pauses for the user",
+        dry.get("awaiting_user") is True and bool(dry.get("question")),
+    )
 
     chunks = _split_message("paragraph one.\n\n" + ("x" * 5000) + "\n\ntail")
     check("long draft splits into >1 message", len(chunks) > 1, f"{len(chunks)} chunks")

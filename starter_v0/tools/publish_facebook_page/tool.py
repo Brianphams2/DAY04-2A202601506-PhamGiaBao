@@ -137,6 +137,15 @@ def publish_facebook_page(
                 "tool": "publish_facebook_page",
                 "status": "needs_confirmation",
                 "message": "Show this preview to the user; resend with confirmed=true only after they say yes.",
+                # The agent loop stops on this flag, so the model cannot answer its
+                # own confirmation prompt inside the same turn.
+                "awaiting_user": True,
+                "question": (
+                    f"Đăng bài này lên Facebook Page ({len(message)} ký tự"
+                    f"{', kèm link' if link else ''})?\n\n---\n{message[:PREVIEW_CHARS]}"
+                    f"{'...' if len(message) > PREVIEW_CHARS else ''}\n---\n\n"
+                    "Trả lời xác nhận thì tôi mới đăng."
+                ),
                 "preview": {
                     "page_id": page_id or None,
                     "chars": len(message),

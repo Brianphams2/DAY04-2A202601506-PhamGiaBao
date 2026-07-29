@@ -5,7 +5,7 @@ kind: action
 provider: Facebook Graph API
 requires_env: [FACEBOOK_PAGE_ID, FACEBOOK_PAGE_ACCESS_TOKEN, FACEBOOK_GRAPH_VERSION]
 inputs: [message, link, confirmed]
-outputs: [status, preview, page_id, post_id, permalink, chars, link]
+outputs: [status, awaiting_user, question, preview, page_id, post_id, permalink, chars, link]
 side_effect: true
 requires_confirmation: true
 ---
@@ -47,12 +47,18 @@ With `confirmed=false` nothing is published:
 {
   "tool": "publish_facebook_page",
   "status": "needs_confirmation",
+  "awaiting_user": true,
+  "question": "Đăng bài này lên Facebook Page (640 ký tự, kèm link)? ...",
   "preview": {
     "page_id": "1234567890", "chars": 640, "link": "https://...",
     "credentials_ready": true, "message_preview": "Market brief ..."
   }
 }
 ```
+
+`awaiting_user: true` makes `run_model_tool_loop` stop the round and hand
+control back to the user, so the model cannot answer its own confirmation
+prompt and publish within the same turn. Same mechanism as `send_telegram`.
 
 With `confirmed=true` and a successful publish:
 

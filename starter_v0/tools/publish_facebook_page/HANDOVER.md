@@ -67,6 +67,8 @@ Lấy credentials: Facebook Page → Meta developer app → Graph API Explorer �
 
 ## 6. UI cần gì
 
+Giống `send_telegram`: response `needs_confirmation` mang cờ `awaiting_user: true`, khiến `run_model_tool_loop` dừng vòng lặp và trả `status: "waiting_for_user"`, nên model không thể tự xác nhận rồi đăng trong cùng một lượt. `app.py` đã xử lý sẵn.
+
 Response `needs_confirmation` trả sẵn `preview` cho modal:
 
 ```json

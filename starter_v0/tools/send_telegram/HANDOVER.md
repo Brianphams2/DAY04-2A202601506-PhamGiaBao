@@ -73,6 +73,10 @@ Theo `TOOL-SETUP.md` §9: để Telegram credentials **unset** trong mọi lần
 
 ## 6. UI cần gì (Bước 4 trong plan)
 
+Confirmation gate được **harness cưỡng chế**, không phụ thuộc model có ngoan hay không. Response `needs_confirmation` mang cờ `awaiting_user: true`, và `run_model_tool_loop` trong `chat.py` dừng vòng lặp ngay khi thấy cờ đó, trả `status: "waiting_for_user"` với `question` làm assistant text. Không có cờ này thì loop đẩy preview ngược về model, model tự trả lời câu hỏi xác nhận của chính nó rồi gọi lại `confirmed=true` trong cùng một lượt — user không kịp thấy gì.
+
+UI chỉ cần: gặp `status == "waiting_for_user"` thì tìm tool event cuối có `result.status == "needs_confirmation"`, dựng modal từ `preview`, và khi user bấm xác nhận thì gửi một message user mới (ví dụ "Tôi xác nhận. Gửi đi.") để model gọi lại tool với `confirmed=true`. `app.py` đã làm đúng như vậy.
+
 Response `needs_confirmation` trả sẵn `preview` để dựng modal:
 
 ```json

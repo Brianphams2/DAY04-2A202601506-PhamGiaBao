@@ -78,10 +78,15 @@ tools:
       required: [items, template]
 
   # ---------------- Bonus tools ----------------
-  # NOTE: the old `send` tool is intentionally NOT declared here. It does the same
-  # thing as the team's `send_telegram` below, and two declarations with the same
-  # purpose make the model route ambiguously. The implementation and its registry
-  # entry are untouched — to bring it back, restore the block from tools.v0.yaml.
+  - name: send
+    description: "Gửi một đoạn văn bản đi."
+    parameters:
+      type: object
+      properties:
+        text: {type: string, default: "", description: "Nội dung"}
+        confirmed: {type: boolean, default: false, description: "Cờ xác nhận"}
+      required: [text]
+
   - name: policy
     description: "Tìm trong tài liệu nội bộ."
     parameters:
@@ -111,54 +116,3 @@ tools:
         max_pages: {type: integer, default: 5, description: "Số trang"}
         max_chars: {type: integer, default: 8000, description: "Số ký tự"}
       required: [arxiv_url]
-
-  # ---------------- Team tools ----------------
-  - name: get_stockprice
-    description: "Lấy giá cổ phiếu hiện tại theo mã ticker, ví dụ AAPL, MSFT, TSLA. Trả về giá, biến động trong ngày, volume và as_of_date. Chỉ dùng cho cổ phiếu; giá crypto dùng get_coinprice. Nếu người dùng chưa nói mã nào thì hỏi lại bằng clarify, không tự đoán mã."
-    parameters:
-      type: object
-      properties:
-        symbol: {type: string, default: "", description: "Mã ticker cổ phiếu, ví dụ AAPL"}
-      required: [symbol]
-
-  - name: get_coinprice
-    description: "Lấy giá crypto hiện tại theo coin id (bitcoin, ethereum, solana) hoặc ticker phổ biến (btc, eth, sol). Trả về giá, market cap, volume 24h và % biến động 24h. Mặc định quy đổi USD. Chỉ dùng cho crypto; giá cổ phiếu dùng get_stockprice. Nếu người dùng chưa nói coin nào thì hỏi lại bằng clarify."
-    parameters:
-      type: object
-      properties:
-        coin_id: {type: string, default: "", description: "CoinGecko id hoặc ticker phổ biến, ví dụ bitcoin hoặc btc"}
-        vs_currency: {type: string, default: "usd", description: "Tiền tệ quy đổi: usd, eur, vnd"}
-      required: [coin_id]
-
-  - name: validate_finance_content
-    description: "Kiểm tra một bản draft tài chính trước khi gửi hoặc đăng: độ dài, citation, chất lượng nguồn, đơn vị và currency của số liệu, as_of_date, và ngôn ngữ khuyến nghị mua/bán. Trả về pass, score, checks và warnings. Chạy tool này TRƯỚC mỗi lần gọi send_telegram hoặc publish_facebook_page. Không gọi mạng, không sửa draft."
-    parameters:
-      type: object
-      properties:
-        draft_text: {type: string, default: "", description: "Toàn bộ nội dung draft cần thẩm định"}
-        min_words: {type: integer, default: 30, description: "Số từ tối thiểu"}
-      required: [draft_text]
-
-  - name: send_telegram
-    description: "Gửi một bản tin đã hoàn chỉnh lên kênh Telegram của team. Gọi lần đầu với confirmed=false để lấy preview cho người dùng duyệt; chỉ gọi lại với confirmed=true sau khi người dùng nói rõ là đồng ý gửi. Không dùng để soạn nội dung."
-    requires_confirmation: true
-    parameters:
-      type: object
-      properties:
-        text: {type: string, default: "", description: "Nội dung đã hoàn chỉnh cần gửi"}
-        confirmed: {type: boolean, default: false, description: "Chỉ đặt true sau khi người dùng xác nhận preview"}
-        parse_mode: {type: string, enum: [markdown, html, plain], default: "markdown", description: "Định dạng văn bản"}
-        destination: {type: string, enum: [default, test], default: "default", description: "Nhãn kênh đã cấu hình sẵn, không phải chat id"}
-        disable_preview: {type: boolean, default: true, description: "Tắt thẻ preview link"}
-      required: [text]
-
-  - name: publish_facebook_page
-    description: "Đăng một bản tin đã hoàn chỉnh lên Facebook Page của team. Gọi lần đầu với confirmed=false để lấy preview cho người dùng duyệt; chỉ gọi lại với confirmed=true sau khi người dùng nói rõ là đồng ý đăng. Chỉ đăng được lên đúng page đã cấu hình, không đăng lên profile cá nhân."
-    requires_confirmation: true
-    parameters:
-      type: object
-      properties:
-        message: {type: string, default: "", description: "Nội dung bài đăng đã hoàn chỉnh"}
-        link: {type: string, default: "", description: "URL http(s) đính kèm, có thể bỏ trống"}
-        confirmed: {type: boolean, default: false, description: "Chỉ đặt true sau khi người dùng xác nhận preview"}
-      required: [message]

@@ -18,6 +18,14 @@ from .social_search.tool import search_tweets
 from .send.tool import send_telegram
 from .lookup.tool import web_search
 
+# Team tools. NOTE: send_telegram_message is deliberately NOT named send_telegram —
+# .send.tool above already exports that name and the later import would shadow it.
+from .get_stockprice.tool import get_stock_price
+from .get_coinprice.tool import get_coin_price
+from .validate_finance_content.tool import validate_finance_content
+from .send_telegram.tool import send_telegram_message
+from .publish_facebook_page.tool import publish_facebook_page
+
 
 # NOTE (starter_v0): tool names here are intentionally vague. These keys are the
 # names the model sees AND the names data/eval_base.json + data/eval_research_extension.json
@@ -35,6 +43,12 @@ TOOL_FUNCTIONS = {
     "policy": search_company_policy,
     "papers": arxiv_search,
     "paper_text": get_arxiv_paper_text,
+    # ---- Team tools ----
+    "get_stockprice": get_stock_price,
+    "get_coinprice": get_coin_price,
+    "validate_finance_content": validate_finance_content,
+    "send_telegram": send_telegram_message,
+    "publish_facebook_page": publish_facebook_page,
 }
 
 
