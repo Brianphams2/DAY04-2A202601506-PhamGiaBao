@@ -6,7 +6,7 @@ from providers.openai_provider import OpenAIProvider
 
 
 class VilaoProvider(OpenAIProvider):
-    """ViLao exposes an OpenAI-compatible Chat Completions surface."""
+    """Vilao OpenAI-compatible Chat Completions provider."""
 
     def __init__(self) -> None:
         super().__init__(

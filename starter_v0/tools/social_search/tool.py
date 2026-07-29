@@ -10,7 +10,7 @@ from tools._shared import TIMEOUT, err
 
 def _twitter_get(path: str, params: dict[str, Any]) -> dict[str, Any]:
     key = os.getenv("RAPIDAPI_KEY")
-    host = os.getenv("RAPIDAPI_TWITTER_HOST", "twitter-api45.p.rapidapi.com")
+    host = os.getenv("RAPIDAPI_TWITTER_HOST", "twitter241.p.rapidapi.com")
     if not key:
         raise RuntimeError("Missing RAPIDAPI_KEY env var")
     response = requests.get(

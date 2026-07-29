@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,7 @@ from versioning import artifact_version_dict, build_artifact_version
 ROOT = Path(__file__).parent
 ARTIFACTS_DIR = ROOT / "artifacts"
 load_lab_env(ROOT)
+EXTERNAL_WRITE_TOOLS = {"send", "send_telegram", "publish_facebook_page"}
 
 
 def now_iso() -> str:
@@ -41,7 +43,18 @@ def trim_history(history: list[dict[str, str]], window: int) -> list[dict[str, s
     return history[-window * 2:]
 
 
-def execute_tool_call(call: ToolCall) -> dict[str, Any]:
+def execute_tool_call(call: ToolCall, *, allow_external_writes: bool = False) -> dict[str, Any]:
+    if call.name in EXTERNAL_WRITE_TOOLS and call.args.get("confirmed") is True and not allow_external_writes:
+        return {
+            "tool": call.name,
+            "args": {**call.args, "confirmed": False},
+            "result": {
+                "status": "needs_confirmation",
+                "awaiting_user": True,
+                "message": "External write blocked. Ask the user for confirmation before executing.",
+                "preview": {k: v for k, v in call.args.items() if k not in {"confirmed", "text", "message"}},
+            },
+        }
     func = TOOL_FUNCTIONS.get(call.name)
     if not func:
         return {
@@ -71,10 +84,7 @@ def tool_results_message(events: list[dict[str, Any]]) -> dict[str, str]:
 def assistant_tool_message(response_text: str | None, calls: list[ToolCall]) -> dict[str, str]:
     call_summary = [{"name": call.name, "args": call.args} for call in calls]
     content = response_text or "I will call the selected tool(s)."
-    return {
-        "role": "assistant",
-        "content": f"{content}\n\nTOOL_CALLS_JSON:\n{json_text(call_summary)}",
-    }
+    return {"role": "assistant", "content": content}
 
 
 def run_model_tool_loop(
@@ -84,6 +94,7 @@ def run_model_tool_loop(
     tools: list[dict[str, Any]],
     model: str | None,
     max_tool_rounds: int,
+    allow_external_writes: bool = False,
 ) -> dict[str, Any]:
     working_messages = list(messages)
     rounds: list[dict[str, Any]] = []
@@ -112,8 +123,8 @@ def run_model_tool_loop(
         non_clarification_events: list[dict[str, Any]] = []
 
         for call in calls:
-            print(f"🔧 {call.name}({json.dumps(call.args, ensure_ascii=False, sort_keys=True)})")
-            event = execute_tool_call(call)
+            print(f"[TOOL] {call.name}({json.dumps(call.args, ensure_ascii=False, sort_keys=True)})")
+            event = execute_tool_call(call, allow_external_writes=allow_external_writes)
             round_record["tool_results"].append(event)
             all_tool_events.append(event)
 
@@ -150,6 +161,9 @@ def write_transcript(path: Path, transcript: dict[str, Any]) -> None:
 
 
 def main() -> None:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description="Interactive Research Agent chat with transcript logging.")
     parser.add_argument("--provider", choices=["openrouter", "openai", "anthropic", "gemini", "vilao"], required=True)
     parser.add_argument("--model", default=None)

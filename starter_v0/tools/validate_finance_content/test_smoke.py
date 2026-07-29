@@ -1,3 +1,8 @@
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 from tool import validate_finance_content
 
 def run_tests():

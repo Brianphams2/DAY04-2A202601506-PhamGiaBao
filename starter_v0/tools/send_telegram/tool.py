@@ -168,10 +168,8 @@ def send_telegram_message(
             return {
                 "tool": "send_telegram",
                 "status": "needs_confirmation",
-                "message": "Show this preview to the user; resend with confirmed=true only after they say yes.",
-                # The agent loop stops on this flag, so the model cannot answer its
-                # own confirmation prompt inside the same turn.
                 "awaiting_user": True,
+                "message": "Show this preview to the user; resend with confirmed=true only after they say yes.",
                 "question": (
                     f"Gửi tin này lên Telegram ({destination}, {len(text)} ký tự, "
                     f"{len(chunks)} message)?\n\n---\n{text[:PREVIEW_CHARS]}"

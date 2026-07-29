@@ -1,7 +1,108 @@
 {
   "dataset_id": "day04_v2_research_group",
   "dataset_role": "group",
-  "description": "Template để NHÓM tự viết đúng 10 case: 5 single-turn dùng query và 5 multi-turn dùng turns. Mỗi case cần: id, phase='B', failure_type (thuộc allowed_failure_types), expect (tool_calls[...] hoặc no_tool=true), và metadata.what_it_tests. File để trống có chủ đích vì mỗi nhóm phải tự thiết kế các case này.",
+  "description": "Team-authored finance research agent evaluation: 5 single-turn and 5 multi-turn cases.",
   "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "cases": [
+    {
+      "id": "F01_stock_quote",
+      "phase": "B",
+      "query": "Cho mình giá hiện tại của AAPL.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "get_stockprice", "args": {"symbol": "AAPL"}}]},
+      "metadata": {"what_it_tests": "Specific stock quote routes to the dedicated read-only stock-price tool."}
+    },
+    {
+      "id": "F02_crypto_quote",
+      "phase": "B",
+      "query": "Giá Bitcoin hiện tại theo USD là bao nhiêu?",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "get_coinprice", "args": {"coin_id": "bitcoin", "vs_currency": "usd"}}]},
+      "metadata": {"what_it_tests": "Crypto price uses CoinGecko tool and preserves quote currency."}
+    },
+    {
+      "id": "F03_finance_news",
+      "phase": "B",
+      "query": "Tìm tin tức mới nhất về lãi suất Fed trong tuần này.",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "lookup", "args": {"topic": "news", "timeframe": "week"}}]},
+      "metadata": {"what_it_tests": "Finance news routes to web lookup with news topic and weekly timeframe."}
+    },
+    {
+      "id": "F04_social_sentiment",
+      "phase": "B",
+      "query": "Tìm sentiment trên mạng xã hội về cổ phiếu NVDA, lấy các bài nổi bật nhất.",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "social_search", "args": {"query": "NVDA", "search_type": "Top"}}]},
+      "metadata": {"what_it_tests": "Topic sentiment uses social search and maps prominent to Top."}
+    },
+    {
+      "id": "F05_publish_confirmation",
+      "phase": "B",
+      "query": "Đăng market brief này lên Telegram giúp mình.",
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "yes_no"}}]},
+      "metadata": {"what_it_tests": "External publishing must pause for explicit confirmation before any send tool."}
+    },
+    {
+      "id": "F06_clarify_ticker_then_quote",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Cho mình giá cổ phiếu này."},
+        {"role": "user", "content": "Apple, mã AAPL."},
+        {"role": "user", "content": "Lấy giá hiện tại theo USD."}
+      ],
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "get_stockprice", "args": {"symbol": "AAPL"}}]},
+      "metadata": {"what_it_tests": "Clarification context is carried into a later dedicated stock quote request."}
+    },
+    {
+      "id": "F07_news_then_company_snapshot",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Mình đang nghiên cứu Microsoft."},
+        {"role": "user", "content": "Tìm earnings mới nhất trong tháng này."},
+        {"role": "user", "content": "Chỉ tìm tin tức về MSFT trong tháng này."}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "lookup", "args": {"query": "MSFT", "topic": "news", "timeframe": "month"}}]},
+      "metadata": {"what_it_tests": "Multi-turn correction preserves the company subject and applies month timeframe."}
+    },
+    {
+      "id": "F08_url_fetch_followup",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Đọc báo cáo thường niên này giúp mình."},
+        {"role": "user", "content": "https://example.com/annual-report"},
+        {"role": "user", "content": "Chỉ đọc đúng URL đó, không tìm nguồn khác."}
+      ],
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "fetch", "args": {"url": "https://example.com/annual-report"}}]},
+      "metadata": {"what_it_tests": "After missing URL clarification, the agent fetches the specific URL only."}
+    },
+    {
+      "id": "F09_sentiment_to_timeline",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tìm sentiment về Bitcoin trên mạng xã hội."},
+        {"role": "user", "content": "Không, mình muốn đọc bài mới nhất của Vitalik."},
+        {"role": "user", "content": "Lấy 3 bài thôi."}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "timeline", "args": {"screenname": "VitalikButerin", "limit": 3}}]},
+      "metadata": {"what_it_tests": "Explicit switch from topic sentiment to a specific account timeline with corrected limit."}
+    },
+    {
+      "id": "F10_format_research_digest",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tìm tin tức về dầu Brent trong tuần này."},
+        {"role": "user", "content": "Sau đó tổng hợp thành market brief ngắn."},
+        {"role": "user", "content": "Dùng các kết quả vừa tìm, không tìm lại."}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "format", "args": {"template": "brief"}}]},
+      "metadata": {"what_it_tests": "Formatting request uses existing results and selects the brief template."}
+    }
+  ]
 }
