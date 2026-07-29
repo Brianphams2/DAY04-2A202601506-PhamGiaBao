@@ -20,8 +20,19 @@ def _bullet(item: dict[str, Any]) -> str:
 
 def render_digest(items: list[dict[str, Any]] | None = None, template: str = "sections", headline: str = "") -> dict[str, Any]:
     items = items or []
-    if template == "brief":
-        markdown = (f"**{headline}**\n\n" if headline else "") + "\n".join(_bullet(item) for item in items[:5])
+    if template in ("brief", "market_brief"):
+        markdown = (f"**{headline or 'Báo cáo tóm tắt thị trường'}**\n\n" if headline or template == "market_brief" else "") + "\n".join(_bullet(item) for item in items[:5])
+    elif template == "company_snapshot":
+        markdown = f"# Company Snapshot: {headline or 'Doanh nghiệp'}\n\n"
+        markdown += "## Tin tức & Điểm nhấn quan trọng\n" + ("\n".join(_bullet(item) for item in items) if items else "- Chưa có dữ liệu")
+    elif template == "newsletter":
+        groups: dict[str, list[dict[str, Any]]] = {}
+        for item in items:
+            groups.setdefault(item.get("section", "Tin tức chính"), []).append(item)
+        parts = [f"# 📰 {headline or 'Finance Newsletter'}", ""]
+        for section, section_items in groups.items():
+            parts += [f"### 📌 {section}", *[_bullet(item) for item in section_items], ""]
+        markdown = "\n".join(parts)
     elif template == "bullets":
         markdown = "\n".join(_bullet(item) for item in items)
     elif template == "thread":
@@ -43,4 +54,5 @@ def render_digest(items: list[dict[str, Any]] | None = None, template: str = "se
             parts += [f"## {section}", *[_bullet(item) for item in section_items], ""]
         markdown = "\n".join(parts)
     return {"tool": "render_digest", "template": template, "markdown": markdown, "item_count": len(items)}
+
 

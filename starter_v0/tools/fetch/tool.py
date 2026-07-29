@@ -26,8 +26,11 @@ def read_url(url: str = "") -> dict[str, Any]:
             "title": meta.get("title") or url,
             "url": meta.get("sourceURL") or url,
             "source": domain(url),
+            "publisher": meta.get("publisher") or meta.get("siteName") or domain(url),
+            "date": meta.get("publishedTime") or meta.get("date") or meta.get("modifiedTime"),
             "summary": (data.get("markdown") or "")[:4000],
         }]}
     except Exception as exc:
         return err("read_url", exc)
+
 

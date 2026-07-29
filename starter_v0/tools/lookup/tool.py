@@ -28,10 +28,13 @@ def web_search(query: str = "", topic: str = "general", timeframe: str | None = 
             "title": item.get("title"),
             "url": item.get("url"),
             "source": domain(item.get("url", "")),
+            "publisher": item.get("publisher") or domain(item.get("url", "")),
             "summary": item.get("content"),
             "score": item.get("score"),
+            "date": item.get("published_date") or item.get("date"),
         } for item in data.get("results", [])]
         return {"tool": "web_search", "query": query, "topic": topic, "timeframe": timeframe, "items": items}
     except Exception as exc:
         return err("web_search", exc)
+
 

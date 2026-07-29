@@ -4,6 +4,7 @@ from typing import Any
 
 
 def ask_user(question: str = "", response_type: str = "text", options: list[str] | None = None) -> dict[str, Any]:
+    """Asks the user a clarifying question regarding their financial research request."""
     return {
         "tool": "ask_user",
         "question": question,
@@ -11,4 +12,5 @@ def ask_user(question: str = "", response_type: str = "text", options: list[str]
         "options": options or [],
         "awaiting_user": True,
     }
+
 

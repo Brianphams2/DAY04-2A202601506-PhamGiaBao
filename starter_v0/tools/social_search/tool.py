@@ -32,6 +32,7 @@ def _tweet_item(raw: dict[str, Any]) -> dict[str, Any]:
         "summary": text,
         "url": f"https://x.com/{handle}/status/{tweet_id}" if handle and tweet_id else "",
         "source": f"@{handle}" if handle else "x.com",
+        "publisher": f"@{handle}" if handle else "Twitter/X",
         "date": raw.get("created_at"),
         "metrics": {"favorites": raw.get("favorites"), "retweets": raw.get("retweets"), "views": raw.get("views")},
     }
@@ -46,7 +47,14 @@ def _tweets_from(data: dict[str, Any], limit: int) -> list[dict[str, Any]]:
 def search_tweets(query: str = "", search_type: str = "Latest", limit: int = 5) -> dict[str, Any]:
     try:
         data = _twitter_get("/search.php", {"query": query, "search_type": search_type})
-        return {"tool": "search_tweets", "query": query, "search_type": search_type, "items": _tweets_from(data, limit)}
+        return {
+            "tool": "search_tweets",
+            "query": query,
+            "search_type": search_type,
+            "items": _tweets_from(data, limit),
+            "disclaimer": "Nguồn từ social media (X/Twitter), chỉ sử dụng làm tham khảo thảo luận/sentiment thị trường, không dùng làm nguồn số liệu tài chính duy nhất.",
+        }
     except Exception as exc:
         return err("search_tweets", exc)
+
 
